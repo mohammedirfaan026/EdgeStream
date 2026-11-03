@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EdgeStream AI — Player</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="back-link">← Back</a>
+      <h1 class="logo">EdgeStream <span>AI</span></h1>
+    </div>
+  </header>
+
+  <main class="player-page">
+    <!-- ── Video player ──────────────────────────────────────────────── -->
+    <div class="player-wrap">
+      <div class="player-container">
+        <video id="videoEl" class="video-el" controls playsinline></video>
+
+        <!-- Buffering warning overlay (shown when AI predicts high risk) -->
+        <div id="buffering-warning" class="buffering-warning" style="display:none">
+          ⚠ AI: Buffering risk detected
+        </div>
+
+        <!-- Buffering spinner overlay -->
+        <div id="buffering-spinner" class="buffering-spinner" style="display:none">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <!-- ── Player info bar ──────────────────────────────────────────── -->
+      <div class="player-info-bar">
+        <span id="video-title" class="player-title">Loading…</span>
+        <div class="player-stats">
+          <span class="stat-badge" id="stat-quality">Quality: —</span>
+          <span class="stat-badge" id="stat-buffer">Buffer: —</span>
+          <span class="stat-badge" id="stat-bitrate">Bitrate: —</span>
+          <span class="stat-badge" id="stat-cache">Cache: —</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Quality selector ─────────────────────────────────────────── -->
+    <div class="controls-card">
+      <label for="quality-select" class="control-label">Quality</label>
+      <select id="quality-select" class="quality-select">
+        <option value="-1">Auto (ABR)</option>
+      </select>
+
+      <div class="risk-indicator" id="risk-indicator" style="display:none">
+        <span class="risk-label">AI Risk:</span>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar" id="risk-bar"></div>
+        </div>
+        <span class="risk-score" id="risk-score">0%</span>
+      </div>
+    </div>
+
+    <!-- ── Video description ─────────────────────────────────────────── -->
+    <div class="desc-card" id="desc-card" style="display:none">
+      <p id="video-description"></p>
+    </div>
+  </main>
+
+  <!-- hls.js — pinned to 1.5.x for API stability -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.11/dist/hls.min.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/metrics.js"></script>
+</body>
+</html>

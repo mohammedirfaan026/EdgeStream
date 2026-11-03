@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EdgeStream AI — Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; color: #7eb8f7; }
+    .subtitle { color: #888; font-size: 0.85rem; margin-bottom: 2rem; }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      max-width: 680px;
+    }
+
+    .card h2 { font-size: 1rem; margin-bottom: 1rem; color: #aac4e8; }
+
+    label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 0.3rem; margin-top: 0.8rem; }
+    input[type="text"], textarea, input[type="file"] {
+      width: 100%; padding: 0.55rem 0.75rem;
+      background: #0f1117; border: 1px solid #333; border-radius: 6px;
+      color: #e0e0e0; font-size: 0.9rem;
+    }
+    textarea { resize: vertical; min-height: 70px; }
+    input[type="file"] { padding: 0.4rem; }
+
+    .btn {
+      display: inline-block; margin-top: 1rem; padding: 0.6rem 1.4rem;
+      background: #2563eb; color: #fff; border: none; border-radius: 6px;
+      font-size: 0.9rem; cursor: pointer; font-weight: 600;
+    }
+    .btn:disabled { background: #444; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { background: #1d4ed8; }
+
+    /* Progress area */
+    #progress-area { display: none; margin-top: 1rem; }
+    .progress-bar-wrap {
+      background: #2a2d3a; border-radius: 6px; height: 10px; overflow: hidden; margin: 0.6rem 0;
+    }
+    .progress-bar { background: #2563eb; height: 100%; transition: width 0.3s ease; width: 0%; }
+    .status-text { font-size: 0.82rem; color: #aaa; }
+
+    /* Video list */
+    #video-list { display: grid; gap: 0.8rem; }
+    .video-row {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #0f1117; border: 1px solid #2a2d3a; border-radius: 8px;
+      padding: 0.75rem 1rem; font-size: 0.85rem;
+    }
+    .video-row .title { font-weight: 600; }
+    .badge {
+      display: inline-block; padding: 0.2rem 0.55rem;
+      border-radius: 4px; font-size: 0.72rem; font-weight: 700;
+    }
+    .badge-ready    { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a44; }
+    .badge-processing { background: #ca8a0422; color: #fbbf24; border: 1px solid #ca8a0444; }
+    .badge-failed   { background: #dc262622; color: #f87171; border: 1px solid #dc262644; }
+    .badge-queued   { background: #1e40af22; color: #60a5fa; border: 1px solid #1e40af44; }
+
+    .msg { padding: 0.6rem 0.9rem; border-radius: 6px; font-size: 0.85rem; margin-top: 0.5rem; }
+    .msg-error   { background: #dc262622; color: #f87171; border: 1px solid #dc262644; }
+    .msg-success { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a44; }
+
+    #msg-box { display: none; }
+  </style>
+</head>
+<body>
+  <h1>EdgeStream AI</h1>
+  <p class="subtitle">Origin Server — Admin Interface &nbsp;|&nbsp; Laptop A</p>
+
+  <!-- ── Upload form ─────────────────────────────────────────────── -->
+  <div class="card">
+    <h2>Upload Video</h2>
+    <form id="upload-form">
+      <label>Title *</label>
+      <input type="text" id="title" name="title" placeholder="My Sample Video" required />
+
+      <label>Description</label>
+      <textarea id="description" name="description" placeholder="Optional description"></textarea>
+
+      <label>Video File * (.mp4, .mkv, .mov, .avi — max 500 MB)</label>
+      <input type="file" id="video-file" name="file" accept=".mp4,.mkv,.mov,.avi" required />
+
+      <button class="btn" type="submit" id="submit-btn">Upload & Process</button>
+    </form>
+
+    <div id="msg-box" class="msg"></div>
+
+    <div id="progress-area">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <span class="status-text" id="status-text">Uploading…</span>
+    </div>
+  </div>
+
+  <!-- ── Video list ──────────────────────────────────────────────── -->
+  <div class="card">
+    <h2>All Videos</h2>
+    <div id="video-list"><p style="color:#888;font-size:0.85rem">Loading…</p></div>
+  </div>
+
+  <script>
+    // ── Config ────────────────────────────────────────────────────────────────
+    const ORIGIN = window.location.origin;   // same server (Laptop A)
+
+    // ── Upload form handler ───────────────────────────────────────────────────
+    const form      = document.getElementById("upload-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const msgBox    = document.getElementById("msg-box");
+    const progressArea = document.getElementById("progress-area");
+    const progressBar  = document.getElementById("progress-bar");
+    const statusText   = document.getElementById("status-text");
+
+    function showMsg(text, type = "error") {
+      msgBox.textContent = text;
+      msgBox.className   = `msg msg-${type}`;
+      msgBox.style.display = "block";
+    }
+
+    function hideMsg() { msgBox.style.display = "none"; }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMsg();
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading…";
+      progressArea.style.display = "block";
+      progressBar.style.width = "5%";
+      statusText.textContent = "Uploading file to server…";
+
+      const fd = new FormData(form);
+      let uploadRes;
+      try {
+        uploadRes = await fetch(`${ORIGIN}/admin/upload`, {
+          method: "POST", body: fd,
+        });
+      } catch (err) {
+        showMsg("Network error: could not reach origin server.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload & Process";
+        return;
+      }
+
+      const data = await uploadRes.json();
+      if (!uploadRes.ok) {
+        showMsg(data.detail || "Upload failed.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload & Process";
+        progressArea.style.display = "none";
+        return;
+      }
+
+      const { job_id } = data;
+      showMsg(`Upload accepted! Processing started (job: ${job_id.slice(0,8)}…)`, "success");
+      statusText.textContent = "Processing video with FFmpeg…";
+      progressBar.style.width = "10%";
+
+      // ── Poll job status ────────────────────────────────────────────────────
+      const pollInterval = setInterval(async () => {
+        try {
+          const jobRes = await fetch(`${ORIGIN}/admin/jobs/${job_id}`);
+          const job    = await jobRes.json();
+
+          progressBar.style.width = `${job.progress}%`;
+          statusText.textContent  = `Status: ${job.status} (${job.progress}%)`;
+
+          if (job.status === "ready") {
+            clearInterval(pollInterval);
+            showMsg("Video is ready to stream!", "success");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Upload & Process";
+            form.reset();
+            loadVideoList();
+          } else if (job.status === "failed") {
+            clearInterval(pollInterval);
+            showMsg(`Processing failed: ${job.error_msg || "Unknown error"}`);
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Upload & Process";
+          }
+        } catch (_) { /* poll silently */ }
+      }, 3000);
+    });
+
+    // ── Video list loader ─────────────────────────────────────────────────────
+    async function loadVideoList() {
+      const container = document.getElementById("video-list");
+      try {
+        const res  = await fetch(`${ORIGIN}/admin/videos`);
+        const list = await res.json();
+
+        if (list.length === 0) {
+          container.innerHTML = '<p style="color:#888;font-size:0.85rem">No videos yet.</p>';
+          return;
+        }
+
+        container.innerHTML = list.map(v => `
+          <div class="video-row">
+            <div>
+              <div class="title">${escHtml(v.title)}</div>
+              <div style="color:#666;font-size:0.78rem;margin-top:0.2rem">
+                ${v.video_id.slice(0,8)}…
+                ${v.duration_s ? ` &nbsp;·&nbsp; ${Math.round(v.duration_s)}s` : ""}
+              </div>
+            </div>
+            <span class="badge badge-${v.status}">${v.status}</span>
+          </div>`).join("");
+      } catch (err) {
+        container.innerHTML = `<p style="color:#f87171;font-size:0.85rem">Failed to load videos.</p>`;
+      }
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    loadVideoList();
+    setInterval(loadVideoList, 10000);   // refresh every 10 seconds
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+*.db
+*.db-shm
+*.db-wal
+
+# Uploaded and processed video files (large, not committed)
+origin-server/uploads/
+origin-server/processed/
+
+# Environment files
+.env
+*.env
+
+# Editor files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Nginx cache (Laptop B, runtime data)
+edge-server/cache/

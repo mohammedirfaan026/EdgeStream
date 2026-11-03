@@ -1,0 +1,39 @@
+version: "3.9"
+
+# EdgeStream AI — Edge Server (Docker Compose)
+# Use this on Windows or macOS where native Nginx install is complex.
+#
+# Prerequisites:
+#   - Docker Desktop installed and running
+#   - Update proxy_pass in nginx.conf to your real Laptop A IP
+#
+# Usage:
+#   cd edge-server
+#   docker compose up -d
+#
+# To stop:
+#   docker compose down
+
+services:
+  nginx-edge:
+    image: nginx:1.27-alpine
+    container_name: edgestream-edge
+    ports:
+      - "80:80"            # Expose port 80 to LAN
+    volumes:
+      # Mount our custom nginx.conf (read-only)
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # Persist cache across container restarts
+      - nginx_cache:/var/cache/nginx/edgestream
+      # Mount logs so we can read them from the host
+      - ./logs:/var/log/nginx
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/edge-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  nginx_cache:
+    driver: local

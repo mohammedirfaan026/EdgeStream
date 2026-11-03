@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EdgeStream AI — Monitoring Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="dash-header">
+    <div class="dash-header-inner">
+      <h1>EdgeStream <span>AI</span> — Monitoring</h1>
+      <div class="header-right">
+        <span class="model-badge" id="model-badge">Model: Loading…</span>
+        <span class="last-update" id="last-update">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-main">
+
+    <!-- ── Row 1: Summary KPIs ───────────────────────────────────────── -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Active Sessions</div>
+        <div class="kpi-value" id="kpi-active">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Sessions</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Buffer</div>
+        <div class="kpi-value" id="kpi-buffer">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Buffering Events</div>
+        <div class="kpi-value" id="kpi-buf-events">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Cache Hit Ratio</div>
+        <div class="kpi-value" id="kpi-hit-ratio">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">AI High-Risk Alerts</div>
+        <div class="kpi-value" id="kpi-alerts">—</div>
+      </div>
+    </div>
+
+    <!-- ── Row 2: Charts ─────────────────────────────────────────────── -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Buffer Duration Over Time</div>
+        <canvas id="bufferChart" height="200"></canvas>
+      </div>
+      <div class="chart-card chart-card--small">
+        <div class="chart-title">Cache Performance</div>
+        <canvas id="cacheChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Row 3: AI Predictions table ──────────────────────────────── -->
+    <div class="table-card">
+      <div class="table-title">Recent AI Predictions (last 20)</div>
+      <div class="table-wrap">
+        <table id="pred-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Risk Score</th>
+              <th>Label</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="pred-tbody">
+            <tr><td colspan="4" class="empty-row">Waiting for predictions…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

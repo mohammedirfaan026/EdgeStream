@@ -1,0 +1,3 @@
+session_id,recorded_at,playback_time_s,buffer_s,bitrate_kbps,dl_speed_kbps,dl_time_ms,is_buffering,quality_level,buffer_trend,label
+test-session-1,2026-11-03 08:58:11,,5.0,1500.0,,,0,,0.0,0
+test-session-1,2026-11-03 08:58:27,,1.2,1500.0,,,0,,-3.8,0

@@ -1,0 +1,2 @@
+session_id,video_id,started_at,last_seen,event_count,avg_buffer_s,buffering_ticks,buffering_events
+test-session-1,v1,2026-11-03 08:58:11,2026-11-03 08:58:27,2,3.1,0,0
